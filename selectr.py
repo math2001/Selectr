@@ -5,7 +5,7 @@ import sys
 import click
 import colorama
 
-# colorama.init()
+colorama.init()
 
 class _Select:
 
