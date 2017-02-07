@@ -4,6 +4,7 @@ from getch import getch
 import sys
 import click
 import colorama
+import os
 
 colorama.init()
 
@@ -12,7 +13,35 @@ class _Select:
     CURSOR_UP_ONE = '\x1b[1A'
     ERASE_LINE = '\x1b[2K'
 
-    ARROW = b'\xe0'
+    def get_key(self):
+        char = getch()
+        if os.name == 'nt': # windows
+            if char == b'\xe0':
+                char = getch()
+                if char == b'H':
+                    return 'up'
+                elif char == b'P':
+                    return 'down'
+                return self.select()
+            elif char == b'\r':
+                return 'enter'
+            elif char == b'\x1b':
+                return 'escape'
+        elif os.name == 'posix': # linux or mac
+            if char == '\x1b':
+                char = getch()
+                if char == '[':
+                    char = getch()
+                    if char == 'A':
+                        return 'up'
+                    elif char == 'B':
+                        return 'down'
+                
+            elif char in ('\r', '\n', '\r\n'):
+                return 'enter'
+            elif char
+
+
 
     def render(self):
         for i, option in enumerate(self.options):
@@ -37,6 +66,22 @@ class _Select:
         self.render()
 
     def select(self):
+        key = self.get_key()
+        if key == 'up':
+            self.move(-1)
+            return self.select()
+        elif key == 'down':
+            self.move(1)
+            return self.select()
+        elif key == 'escape':
+            return
+        elif key == 'return':
+            if self._want_index:
+                return self.options[self.index], self.index
+            return self.options[self.index]
+
+        return
+
         char = getch()
         if char == _Select.ARROW:
             char = getch()
